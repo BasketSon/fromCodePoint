@@ -5,9 +5,12 @@ const plumber = require("gulp-plumber");
 const server = require("browser-sync").create();
 const rename = require("gulp-rename");
 const posthtml = require("gulp-posthtml");
+var postcss = require("gulp-postcss");
+var autoprefixer = require("autoprefixer");
+var minify = require("gulp-csso");
 const del = require("del");
 const htmlmin = require("gulp-htmlmin");
-const jsmin = require("gulp-uglify");
+const jsmin = require("gulp-uglify-es").default;
 const imagemin = require("gulp-imagemin");
 
 gulp.task("clear", async function () {
@@ -90,4 +93,4 @@ gulp.task("copyrest", function () {
 // });
 
 gulp.task("start", gulp.series("html", "css", "js", "server"));
-gulp.task("build", gulp.series("clear", "html", "js", "images", "copyrest", "server"));
+gulp.task("build", gulp.series("clear", "html", "js", "css", "images", "copyrest", "server"));
