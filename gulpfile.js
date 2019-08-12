@@ -77,6 +77,12 @@ gulp.task("copyrest", function () {
   })
   .pipe(gulp.dest("dist"));
 });
+
+gulp.task("docs", function () {
+  del("docs/**");
+  return gulp.src("dist/**")
+  .pipe(gulp.dest("docs"));
+})
 // gulp.task("webp", function () {
 //   return gulp.src("build/img/**/*.{jpg,png}")
 //     .pipe(webp({quality: 90}))

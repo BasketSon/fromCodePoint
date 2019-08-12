@@ -42,8 +42,7 @@ Char.prototype.resize = function (up) {
 }
 
 
-let lastSet;
-let charList = [];
+let lastSetEnd, lastSetStart, charList = [];
 
 function createSet (start, end) {
   let set = new DocumentFragment();
@@ -53,33 +52,55 @@ function createSet (start, end) {
     charList.push(char);
     char.render(set);
   }
-  lastSet = end;
+  lastSetStart = start;
+  lastSetEnd = end;
   return set;
+};
+
+const charsField = document.querySelector('.chars');
+
+function drawSet (start, end) {
+  charsField.appendChild(createSet(start, end))
 }
 function removeChars () {
   document.querySelectorAll('.char').forEach(function (it) {
     it.remove();
   })
-}
+};
 
 function newSet () {
+  let setLength = getButtonsAmount() ? getButtonsAmount() : 300;
   removeChars();
-  let previousIndex = lastSet ? lastSet : 0;
+  let previousIndex = lastSetEnd ? lastSetEnd : 0;
   let firstIndex = +prompt('С индекса', previousIndex);
-  let lastIndex = +prompt('По индекс', firstIndex + 300);
-  document.querySelector('.chars').appendChild(createSet(firstIndex, lastIndex))
+
+  let lastIndex = +prompt('По индекс', firstIndex + setLength);
+  drawSet(firstIndex, lastIndex)
 }
 
 function nextSet () {
+  let setLength = getButtonsAmount();
   removeChars();
-  firstIndex = lastSet ? lastSet : 0;
-  document.querySelector('.chars').appendChild(createSet(firstIndex, firstIndex + 300))
+  let firstIndex = lastSetEnd ? lastSetEnd : 0;
+  let lastIndex = setLength ? firstIndex + setLength : firstIndex + 300;
+  drawSet(firstIndex, lastIndex)
 }
 
 function prevSet () {
+  if (!lastSetStart) return false;
+  let setLength = getButtonsAmount();
   removeChars();
-  firstIndex = lastSet > 600 ? lastSet - 600 : 0;
-  document.querySelector('.chars').appendChild(createSet(firstIndex, firstIndex + 300))
+  let firstIndex = lastSetStart - setLength > 0 ? lastSetStart - setLength : 0;
+  let lastIndex = lastSetStart;
+  drawSet(firstIndex, lastIndex)
+}
+
+function getButtonsAmount () {
+  let square = charsField.offsetHeight * charsField.offsetWidth;
+  let someButtons = document.querySelectorAll('.char:nth-child(3n)');
+  let buttonSquare = Array.from(someButtons).reduce((a, b) =>
+  (a + ((b.offsetHeight + 20) * (b.offsetWidth + 25))), 0) / someButtons.length;
+  return Math.floor(square / buttonSquare);
 }
 
 let newSetButton = document.querySelector('.new-set');
@@ -120,24 +141,23 @@ function padToFour (str) {
 
 
 let clickAudio = new Audio();
-clickAudio.src = 'https://www.fesliyanstudios.com/sp.php?i=/649.mp3';
+clickAudio.src = '../media/click.mp3';
 clickAudio.preload = 'auto';
 
 function playClickSound () {
   let click = clickAudio.cloneNode();
-  // click.currentTime = 0.65;
+  click.currentTime = 0.2;
   click.volume = 0.2;
   click.play();
   click.loop = false;
 }
 
-let table = document.createElement('div');
-table.classList.add('show-unicode')
-document.body.insertAdjacentElement('beforeend', table);
+const log = document.querySelector('.log');
+
 
 function typeCopiedSymbol (symbol) {
-  table.textContent += `${symbol}`;
-  if (table.textContent.length > 20) {
-    table.textContent = table.textContent.slice(-20);
+  log.textContent += `${symbol} `;
+  if (log.textContent.split(' ').length > 30) {
+    log.textContent = log.textContent.split(' ').slice(-30).join(' ');
   }
 }
