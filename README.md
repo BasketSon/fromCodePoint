@@ -1,6 +1,7 @@
 # fromCodePoint
 
 Для просмотра и копирования символов в юникод и их кодов в формате '\u0000'.
+https://basketson.github.io/fromCodePoint/
 
 Управление с клавиатуры:
 
