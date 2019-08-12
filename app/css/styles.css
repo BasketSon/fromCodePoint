@@ -6,15 +6,27 @@ html {
 }
 body {
   display: grid;
-  grid-template-rows: 5vh auto auto;
+  grid-template-rows: 50px auto auto;
   height: 100vh;
   margin: 0;
   padding: 10px;
   box-sizing: border-box;
 }
 .new-set {
-  width: 100%;
-  height: 30px;
+  margin: 0 auto;
+  width: 20%;
+  min-width: 120px;
+  height: 45px;
+
+  font-size: 24px;
+  padding-bottom: 5px;
+  color: #222;
+  text-shadow: 0px 1px 2px #666;
+
+  border-radius: 3px;
+  border-image-source: url("../img/button.png");
+  border-image-width : 8px;
+  border-image-slice: 30 30 30 30 fill;
 
 }
 
@@ -38,11 +50,15 @@ body {
   border-image-slice: 30 30 30 30 fill;
   box-shadow:
   0 0 5px rgba(0,0,0,0.4);
+  color: #222;
+  text-shadow: 0px 1px 2px #666;
 }
+.new-set:focus,
 .char:active,
 .char:focus {
   outline: none;
 }
+.new-set:active,
 .char:active {
   transform: translateY(1.5px);
   box-shadow:
@@ -51,7 +67,7 @@ body {
 
 .log {
   word-wrap: break-word;
-  margin-top: auto;
+  /* margin-top: auto; */
   font-size: 3em;
   width: 100%;
   box-sizing: border-box;
