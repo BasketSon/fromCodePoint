@@ -1,0 +1,36 @@
+{
+  "name": "from_code_point",
+  "version": "1.0.0",
+  "description": "Быстрый просмотр и копирование юникод-символов",
+  "main": "index.js",
+  "devDependencies": {
+    "autoprefixer": "9.5.x",
+    "browser-sync": "2.26.x",
+    "del": "^4.1.1",
+    "eslint": "^4.2.0",
+    "gulp": "^4.0.x",
+    "gulp-csso": "^3.0.1",
+    "gulp-htmlmin": "^5.0.1",
+    "gulp-imagemin": "^5.0.3",
+    "gulp-plumber": "^1.2.x",
+    "gulp-posthtml": "^3.0.4",
+    "gulp-rename": "^1.4.0",
+    "gulp-sourcemaps": "2.6.x",
+    "gulp-uglify": "^3.0.2",
+    "imagemin": "^7.0.0",
+    "standard": "*"
+  },
+  "scripts": {
+    "test": "standard && node my-tests.js",
+    "build": "gulp build",
+    "start": "gulp start"
+  },
+  "keywords": [
+    "unicode"
+  ],
+  "author": "BasketSon",
+  "license": "ISC",
+  "dependencies": {
+    "imagemin-optipng": "^7.0.0"
+  }
+}
