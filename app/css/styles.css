@@ -1,8 +1,16 @@
+html {
+  height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+}
 body {
-  display: flex;
+  display: grid;
+  grid-template-rows: 5vh auto auto;
+  height: 100vh;
+  margin: 0;
+  padding: 10px;
   box-sizing: border-box;
-  flex-direction: column;
-  min-height: 97vh;
 }
 .new-set {
   width: 100%;
@@ -12,10 +20,12 @@ body {
 
 .chars {
   display: flex;
+  align-items: flex-start;
   flex-wrap: wrap;
   list-style: none;
   padding: 5px;
   margin: 0;
+  overflow-y: scroll;
 }
 
 .char {
@@ -29,8 +39,17 @@ body {
   box-shadow:
   0 0 5px rgba(0,0,0,0.4);
 }
+.char:active,
+.char:focus {
+  outline: none;
+}
+.char:active {
+  transform: translateY(1.5px);
+  box-shadow:
+  0 0 2px rgba(0,0,0,0.4);
+}
 
-.show-unicode {
+.log {
   word-wrap: break-word;
   margin-top: auto;
   font-size: 3em;
