@@ -20,9 +20,14 @@ body {
 
 .char {
   margin: 5px 10px;
-  padding: 5px;
+  padding: 5px 15px 15px;
+  min-width: 36px;
   border-radius: 3px;
-  border: 1px solid black;
+  border-image-source: url("../img/button.png");
+  border-image-width : 10px;
+  border-image-slice: 30 30 30 30 fill;
+  box-shadow:
+  0 0 5px rgba(0,0,0,0.4);
 }
 
 .show-unicode {

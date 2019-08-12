@@ -1,4 +1,4 @@
-const symbolFontSize = 1.8;
+let symbolFontSize = 1.8;
 
 const Char = function (i) {
   this.codePoint = i;
