@@ -106,22 +106,22 @@ function newSet () {
   drawSet(firstIndex, lastIndex)
 }
 
-function nextSet () {
+let nextSet = throttle(() => {
   let setLength = getButtonsAmount();
   removeChars();
   let firstIndex = lastSetEnd ? lastSetEnd : 0;
   let lastIndex = setLength ? firstIndex + setLength : firstIndex + 300;
   drawSet(firstIndex, lastIndex)
-}
+}, 150)
 
-function prevSet () {
+let prevSet = throttle(() => {
   if (!lastSetStart) return false;
   let setLength = getButtonsAmount();
   removeChars();
   let firstIndex = lastSetStart - setLength > 0 ? lastSetStart - setLength : 0;
   let lastIndex = lastSetStart;
   drawSet(firstIndex, lastIndex)
-}
+}, 150)
 
 function getButtonsAmount () {
   let square = charsField.offsetHeight * charsField.offsetWidth;
@@ -206,4 +206,36 @@ function updateFavicon (symbol) {
   ctx.fillText(String(symbol), canvas.width/2, canvas.height - 3);
 
   link.href = canvas.toDataURL('image/png');
+}
+
+// throttle
+
+function throttle(func, ms) {
+
+  let isThrottled = false,
+    savedArgs,
+    savedThis;
+
+  function wrapper() {
+
+    if (isThrottled) { // (2)
+      savedArgs = arguments;
+      savedThis = this;
+      return;
+    }
+
+    func.apply(this, arguments); // (1)
+
+    isThrottled = true;
+
+    setTimeout(function() {
+      isThrottled = false; // (3)
+      if (savedArgs) {
+        wrapper.apply(savedThis, savedArgs);
+        savedArgs = savedThis = null;
+      }
+    }, ms);
+  }
+
+  return wrapper;
 }
