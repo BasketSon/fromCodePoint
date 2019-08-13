@@ -10,28 +10,22 @@ const Char = function (i) {
 Char.prototype.createNode = function () {
     let charNode = document.createElement('button');
     charNode.classList.add('char');
-    charNode.setAttribute('title', `code is ${this.codePoint}`);
+    charNode.setAttribute('title', `Dec code is ${this.codePoint}`);
     charNode.textContent = this.utfSymbol;
     charNode.style.fontSize = `${this.size}em`
-    charNode.addEventListener('click', function (evt) {
-      playClickSound();
-      let copied = evt.shiftKey ?
-          `\\u${padToFour(decToHex(this.textContent.codePointAt(0)))}`
-          : this.textContent;
-      typeCopiedSymbol(copied);
-      navigator.clipboard.writeText(copied)
-      .then (() => {
-        console.log(copied + ' скопировано в буфер')
-      })
-      .catch (err => {
-        console.log('Ошибка', err)
-      })
-    });
+
     return charNode;
   };
 
 Char.prototype.render = function (parent) {
   parent.appendChild(this.node)
+}
+
+Char.prototype.renderIcon = function () {
+  let symbol = this.utfSymbol
+  this.node.addEventListener('click', function () {
+    updateFavicon(symbol)
+  })
 }
 
 Char.prototype.resize = function (up) {
@@ -41,6 +35,37 @@ Char.prototype.resize = function (up) {
   symbolFontSize = this.size;
 }
 
+Char.prototype.copyToClipboard = function () {
+  let symbol = this.utfSymbol;
+  let decCode = this.codePoint;
+  this.node.addEventListener('click', function (evt) {
+    let copied = evt.shiftKey ?
+        `\\u${decToHexWithPad(decCode)}`
+        : symbol;
+    typeCopiedSymbol(copied);
+    navigator.clipboard.writeText(copied)
+    .then (() => {
+      console.log(copied + ' скопировано в буфер')
+    })
+    .catch (err => {
+      console.log('Ошибка', err)
+    })
+  });
+};
+
+Char.prototype.playKeySound = function () {
+  this.node.addEventListener('click', function () {
+    playClickSound();
+  });
+};
+
+function decToHexWithPad (n) {
+  let str = Number(n).toString(16);
+  return n <= 9999 ? `000${str}`.substr(-4) : str;
+}
+
+
+  // Отрисовка коллекций кнопок, переключение впред/назад
 
 let lastSetEnd, lastSetStart, charList = [];
 
@@ -51,6 +76,9 @@ function createSet (start, end) {
     let char = new Char(i);
     charList.push(char);
     char.render(set);
+    char.copyToClipboard();
+    char.playKeySound();
+    char.renderIcon();
   }
   lastSetStart = start;
   lastSetEnd = end;
@@ -99,7 +127,7 @@ function getButtonsAmount () {
   let square = charsField.offsetHeight * charsField.offsetWidth;
   let someButtons = document.querySelectorAll('.char:nth-child(3n)');
   let buttonSquare = Array.from(someButtons).reduce((a, b) =>
-  (a + ((b.offsetHeight + 20) * (b.offsetWidth + 25))), 0) / someButtons.length;
+  (a + ((b.offsetHeight + 20) * (b.offsetWidth + 30))), 0) / someButtons.length;
   return Math.floor(square / buttonSquare);
 }
 
@@ -131,13 +159,7 @@ window.addEventListener('keydown', function (evt) {
   }
 });
 
-function decToHex (n) {
-  return Number(n).toString(16);
-};
-
-function padToFour (str) {
-  return parseInt(str, 16) <= 9999 ? `000${str}`.substr(-4) : str;
-}
+ // Проигрывание звука нажатия клавиши
 
 
 let clickAudio = new Audio();
@@ -152,6 +174,9 @@ function playClickSound () {
   click.loop = false;
 }
 
+
+  // Вывод в лог скопированного символа/кода
+
 const log = document.querySelector('.log');
 
 
@@ -160,4 +185,25 @@ function typeCopiedSymbol (symbol) {
   if (log.textContent.split(' ').length > 30) {
     log.textContent = log.textContent.split(' ').slice(-30).join(' ');
   }
+}
+
+
+// Динамический фавикон
+
+const canvas = document.querySelector('#iconCanvas');
+const ctx = canvas.getContext('2d');
+const link = document.querySelector('link[rel="icon"]');
+
+ctx.font = "14px Arial";
+ctx.textAlign = "center";
+ctx.fillText("🚳", canvas.width/2, canvas.height - 3);
+
+link.href = canvas.toDataURL('image/png');
+
+function updateFavicon (symbol) {
+  console.log(symbol)
+  ctx.clearRect(0, 0, 16, 16);
+  ctx.fillText(String(symbol), canvas.width/2, canvas.height - 3);
+
+  link.href = canvas.toDataURL('image/png');
 }
