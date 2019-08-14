@@ -37,7 +37,7 @@ main {
 
 .chars {
   display: flex;
-  align-items: flex-start;
+  align-content: flex-start;
   flex-wrap: wrap;
   list-style: none;
   padding: 5px;

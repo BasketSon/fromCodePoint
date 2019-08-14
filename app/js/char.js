@@ -174,7 +174,7 @@ window.addEventListener('keydown', function (evt) {
 
 
 let clickAudio = new Audio();
-clickAudio.src = '../media/click.mp3';
+clickAudio.src = 'media/click.mp3';
 clickAudio.preload = 'auto';
 
 function playClickSound () {
