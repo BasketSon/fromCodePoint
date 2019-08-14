@@ -4,7 +4,7 @@ const Char = function (i) {
   this.codePoint = i;
   this.size = symbolFontSize;
   this.utfSymbol = String.fromCodePoint(i);
-  this.node = this.createNode();
+  this.node = this.node ? this.node : this.createNode();
 }
 
 Char.prototype.createNode = function () {
@@ -69,26 +69,35 @@ function decToHexWithPad (n) {
 
 let lastSetEnd, lastSetStart, charList = [];
 
-function createSet (start, end) {
-  let set = new DocumentFragment();
+function createSet (start, end, set) {
+  let setFragment = new DocumentFragment();
   charList = [];
-  for (let i = start; i <= end; i++) {
-    let char = new Char(i);
-    charList.push(char);
-    char.render(set);
+  function addChar (codePoint) {
+    let char = new Char(codePoint);
     char.copyToClipboard();
     char.playKeySound();
     char.renderIcon();
+    charList.push(char);
+    char.render(setFragment);
   }
-  lastSetStart = start;
-  lastSetEnd = end;
-  return set;
+  if (!set) {
+    for (let i = start; i <= end; i++) {
+      addChar(i)
+    }
+    lastSetStart = start;
+    lastSetEnd = end;
+  } else {
+    for (let codePoint of set) {
+      addChar(codePoint)
+    }
+  }
+  return setFragment;
 };
 
 const charsField = document.querySelector('.chars');
 
-function drawSet (start, end) {
-  charsField.appendChild(createSet(start, end))
+function drawSet (start, end, set) {
+  charsField.appendChild(createSet(start, end, set))
 }
 function removeChars () {
   document.querySelectorAll('.char').forEach(function (it) {
@@ -131,7 +140,7 @@ function getButtonsAmount () {
   return Math.floor(square / buttonSquare);
 }
 
-let newSetButton = document.querySelector('.new-set');
+let newSetButton = document.querySelector('.buttons__new-set');
 newSetButton.addEventListener('click', newSet);
 
 window.addEventListener('keydown', function (evt) {
@@ -159,6 +168,7 @@ window.addEventListener('keydown', function (evt) {
   }
 });
 
+
  // Проигрывание звука нажатия клавиши
 
 
@@ -178,14 +188,81 @@ function playClickSound () {
   // Вывод в лог скопированного символа/кода
 
 const log = document.querySelector('.log');
-
+let maxSymbols = 30;
 
 function typeCopiedSymbol (symbol) {
   log.textContent += `${symbol} `;
   if (log.textContent.split(' ').length > 30) {
-    log.textContent = log.textContent.split(' ').slice(-30).join(' ');
+    log.textContent = log.textContent.split(' ').slice(-maxSymbols).join(' ');
   }
 }
+
+// Сохранить свой сет
+
+function getSetFromTyped () {
+  let set = new Set;
+  let arr = log.textContent
+  .split(' ')
+  .slice(0, -1)  // Последний пробел добавляет "" в массив
+  .map((it) => it.codePointAt(0));
+  for (let symbol of arr) {
+    set.add(symbol)
+  }
+  return set
+}
+
+function drawOwnSet () {
+  removeChars();
+  let ownSet = getSetFromTyped();
+  drawSet(null, null, ownSet);
+  addSaveButton(ownSet);
+};
+
+function addSaveButton (set) {
+  let saveButton = new Char(128190);
+  saveButton.playKeySound();
+  saveButton.node.style.marginLeft = 'auto';
+  saveButton.render(charsField);
+  charList.push(saveButton);
+  saveButton.node.addEventListener('click', function () {
+    addSetToLocalStorage(set)
+  })
+};
+
+let saved = JSON.parse(localStorage.getItem('saved'));
+let numberOfSaves = saved ? Object.keys(saved).length + 1 : 1;
+
+function addSetToLocalStorage (set) {
+  let str = Array.from(set).reduce((a, b) => a + String.fromCodePoint(b), '');
+  let name = prompt('Укажите название сэта', `My set ${numberOfSaves}`);
+  if (name === null) {
+    return false
+  }
+  if (!saved) {
+    saved = {};
+  }
+  if (saved.hasOwnProperty(name)) {
+    if (!confirm('Сэт с таким именем уже существует. Заменить сэт?')) {
+    return false;
+    }
+  }
+  let nameKey = Object.keys(saved).find(key => saved[key] === str);
+  if (nameKey) {
+    if (confirm('Такой сэт уже существует. Переименовать?')) {
+    delete saved[nameKey]
+    }
+  }
+  saved[name] = str;
+  localStorage.setItem('saved', JSON.stringify(saved));
+  numberOfSaves++;
+};
+
+// Загрузка из localStorage
+
+if (saved) {
+  console.log(Object.keys(saved).length)
+}
+
 
 
 // Динамический фавикон
@@ -196,12 +273,11 @@ const link = document.querySelector('link[rel="icon"]');
 
 ctx.font = "14px Arial";
 ctx.textAlign = "center";
-ctx.fillText("🚳", canvas.width/2, canvas.height - 3);
+ctx.fillText("🚳", canvas.width / 2, canvas.height - 3);
 
 link.href = canvas.toDataURL('image/png');
 
 function updateFavicon (symbol) {
-  console.log(symbol)
   ctx.clearRect(0, 0, 16, 16);
   ctx.fillText(String(symbol), canvas.width/2, canvas.height - 3);
 
@@ -218,18 +294,18 @@ function throttle(func, ms) {
 
   function wrapper() {
 
-    if (isThrottled) { // (2)
+    if (isThrottled) {
       savedArgs = arguments;
       savedThis = this;
       return;
     }
 
-    func.apply(this, arguments); // (1)
+    func.apply(this, arguments);
 
     isThrottled = true;
 
     setTimeout(function() {
-      isThrottled = false; // (3)
+      isThrottled = false;
       if (savedArgs) {
         wrapper.apply(savedThis, savedArgs);
         savedArgs = savedThis = null;
