@@ -99,4 +99,4 @@ gulp.task("docs", function () {
 // });
 
 gulp.task("start", gulp.series("html", "css", "js", "server"));
-gulp.task("build", gulp.series("clear", "html", "js", "css", "images", "copyrest", "server"));
+gulp.task("build", gulp.series("clear", "html", "js", "css", "images", "copyrest", "docs", "server"));
