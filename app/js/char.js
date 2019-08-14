@@ -1,6 +1,6 @@
 let symbolFontSize = 1.8;
 
-const Char = function (i) {
+function Char (i) {
   this.codePoint = i;
   this.size = symbolFontSize;
   this.utfSymbol = String.fromCodePoint(i);
@@ -97,6 +97,7 @@ function createSet (start, end, set) {
 const charsField = document.querySelector('.chars');
 
 function drawSet (start, end, set) {
+  startWindow.hidden = true;
   charsField.appendChild(createSet(start, end, set))
 }
 function removeChars () {
@@ -185,19 +186,44 @@ function playClickSound () {
 }
 
 
-  // Вывод в лог скопированного символа/кода
+  // Вывод в лог скопированного символа/кода. Размер лога
 
 const log = document.querySelector('.log');
 let maxSymbols = 30;
 
 function typeCopiedSymbol (symbol) {
+  if (symbol.startsWith('\\u')) {
+    showCopiedCode(symbol);
+    return;
+  }
   log.textContent += `${symbol} `;
-  if (log.textContent.split(' ').length > 30) {
-    log.textContent = log.textContent.split(' ').slice(-maxSymbols).join(' ');
+  if (log.textContent.split(' ').length > maxSymbols) {
+    log.textContent = log.textContent.split(' ').slice(-1 - maxSymbols).join(' ');
   }
 }
 
+const copiedCodeContainer = document.querySelector('.log__current-code');
+const copiedCode = document.querySelector('.log__unicode');
+let lastTimeout;
+
+function showCopiedCode (code) {
+  copiedCode.textContent = code;
+  copiedCodeContainer.classList.add('visible');
+  clearTimeout(lastTimeout);
+  lastTimeout = setTimeout(() => {copiedCodeContainer.classList.remove('visible')}, 2000)
+}
+
+const logLength = document.querySelector('#log-length');
+const setLogLengthButton = document.querySelector('#log-length-set');
+
+setLogLengthButton.addEventListener('click', function () {
+  maxSymbols = logLength.value
+})
+
 // Сохранить свой сет
+
+const createSetFromLogButton = document.querySelector('#create-set-from-log');
+createSetFromLogButton.addEventListener('click', () => drawOwnSet(getSetFromTyped()));
 
 function getSetFromTyped () {
   let set = new Set;
@@ -211,9 +237,8 @@ function getSetFromTyped () {
   return set
 }
 
-function drawOwnSet () {
+function drawOwnSet (ownSet) {
   removeChars();
-  let ownSet = getSetFromTyped();
   drawSet(null, null, ownSet);
   addSaveButton(ownSet);
 };
@@ -259,11 +284,52 @@ function addSetToLocalStorage (set) {
 
 // Загрузка из localStorage
 
-if (saved) {
-  console.log(Object.keys(saved).length)
+const startWindow = document.querySelector('.start-window');
+const savesCardsContainer = document.querySelector('.start-window__saves')
+const saveCardTemplate = document.querySelector('#save-card').content.querySelector('.save-card');
+
+startWindow.hidden = false;
+
+function SaveCard (entrie) {
+  this.saveName = entrie[0];
+  this.symbolsString = entrie[1];
+  this.symbols = this.symbolsString.split('').map((it) => it.codePointAt(0));
+  this.node = this.node ? this.node : this.createNode();
+}
+
+SaveCard.prototype.createNode = function () {
+    let saveNode = saveCardTemplate.cloneNode(true);
+    saveNode.querySelector('.save-card__name').textContent = this.saveName;
+    let symbolsList = saveNode.querySelector('.save-card__symbols');
+    let iconsFragment = new DocumentFragment();
+    for (let symbol of this.symbolsString) {
+      let symbolIcon = document.createElement('span');
+      symbolIcon.classList.add('symbol-icon');
+      symbolIcon.textContent = symbol;
+      iconsFragment.appendChild(symbolIcon);
+    }
+    symbolsList.appendChild(iconsFragment);
+
+    return saveNode;
+};
+
+SaveCard.prototype.load = function () {
+  this.node.addEventListener('click', () => drawOwnSet(this.symbols))
 }
 
 
+
+if (saved) {
+  let savesFragment = new DocumentFragment();
+  for (let entrie of Object.entries(saved)) {
+    let saveCard = new SaveCard(entrie);
+    saveCard.load();
+    savesFragment.appendChild(saveCard.node)
+  }
+  savesCardsContainer.appendChild(savesFragment);
+}
+
+document.querySelector('.start-window').hidden = false;
 
 // Динамический фавикон
 

@@ -15,12 +15,46 @@
           new set
         </button>
       </nav>
-      <div class="chars">
+      <section class="chars">
+        <div class="start-window" hidden>
+          <div class="start-window__saves">
+          </div>
+        </div>
 
-      </div>
-      <div class="log">
+        <template id="save-card">
+          <div class="save-card">
+            <p class="save-card__name"></p>
+            <p class="save-card__symbols"></p>
+          </div>
+        </template>
+      </section>
+      <section class="output">
+        <nav class="log-menu">
+          <ul class="log-menu__list">
+            <li class="log-menu__item">
+              <label class="log-menu__label" for="log-length">Размер лога</label>
+              <input class="log-menu__input" type="number" id="log-length" name="logLength" value="30">
+              <button class="log-menu__button" type="button" id="log-length-set" name="setLogLength">задать</button>
+            </li>
+            <li class="log-menu__item"></li>
+            <li class="log-menu__item">
+              <button class="log-menu__button create-set-from-log" type="button" id="create-set-from-log" name="createSetFromLog">Создать сэт из символов в логе</button>
 
-      </div>
+            </li>
+          </ul>
+        </nav>
+
+        <div class="log-wraper">
+          <div class="log">
+          </div>
+          <div class="log__current-code">
+            <p>js code:</p>
+            <p class="log__unicode"></p>
+          </div>
+        </div>
+
+
+      </section>
     </main>
     <script src="js/char.js">
 
