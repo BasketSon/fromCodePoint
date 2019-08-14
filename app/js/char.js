@@ -258,7 +258,9 @@ let saved = JSON.parse(localStorage.getItem('saved'));
 let numberOfSaves = saved ? Object.keys(saved).length + 1 : 1;
 
 function addSetToLocalStorage (set) {
-  let str = Array.from(set).reduce((a, b) => a + String.fromCodePoint(b), '');
+  let str = Array.from(set)
+  .reduce((a, b) => a + ' ' + String.fromCodePoint(b), '')
+  .slice(1);
   let name = prompt('Укажите название сэта', `My set ${numberOfSaves}`);
   if (name === null) {
     return false
@@ -293,7 +295,7 @@ startWindow.hidden = false;
 function SaveCard (entrie) {
   this.saveName = entrie[0];
   this.symbolsString = entrie[1];
-  this.symbols = this.symbolsString.split('').map((it) => it.codePointAt(0));
+  this.symbolsCodes = this.symbolsString.split(' ').map((it) => it.codePointAt(0));
   this.node = this.node ? this.node : this.createNode();
 }
 
@@ -302,7 +304,7 @@ SaveCard.prototype.createNode = function () {
     saveNode.querySelector('.save-card__name').textContent = this.saveName;
     let symbolsList = saveNode.querySelector('.save-card__symbols');
     let iconsFragment = new DocumentFragment();
-    for (let symbol of this.symbolsString) {
+    for (let symbol of this.symbolsString.split(' ')) {
       let symbolIcon = document.createElement('span');
       symbolIcon.classList.add('symbol-icon');
       symbolIcon.textContent = symbol;
@@ -314,7 +316,7 @@ SaveCard.prototype.createNode = function () {
 };
 
 SaveCard.prototype.load = function () {
-  this.node.addEventListener('click', () => drawOwnSet(this.symbols))
+  this.node.addEventListener('click', () => drawOwnSet(this.symbolsCodes))
 }
 
 
