@@ -141,7 +141,7 @@ function getButtonsAmount () {
   return Math.floor(square / buttonSquare);
 }
 
-let newSetButton = document.querySelector('.buttons__new-set');
+let newSetButton = document.querySelector('.new-set');
 newSetButton.addEventListener('click', newSet);
 
 window.addEventListener('keydown', function (evt) {
@@ -316,7 +316,8 @@ SaveCard.prototype.createNode = function () {
 };
 
 SaveCard.prototype.load = function () {
-  this.node.addEventListener('click', () => drawOwnSet(this.symbolsCodes))
+  let preview = this.node.querySelector('.save-card__symbols');
+  preview.addEventListener('click', () => drawOwnSet(this.symbolsCodes))
 }
 
 
