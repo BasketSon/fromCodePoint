@@ -4,18 +4,16 @@ function Char (i) {
   this.codePoint = i;
   this.size = symbolFontSize;
   this.utfSymbol = String.fromCodePoint(i);
-  this.node = this.node ? this.node : this.createNode();
+  this.utfJsCode = `\\u${decToHexWithPad(i)}`;
+
+  let charNode = document.createElement('button');
+  charNode.classList.add('char');
+  charNode.setAttribute('title', `Dec code is ${this.codePoint}`);
+  charNode.textContent = this.utfSymbol;
+  charNode.style.fontSize = `${this.size}em`;
+
+  this.node = charNode;
 }
-
-Char.prototype.createNode = function () {
-    let charNode = document.createElement('button');
-    charNode.classList.add('char');
-    charNode.setAttribute('title', `Dec code is ${this.codePoint}`);
-    charNode.textContent = this.utfSymbol;
-    charNode.style.fontSize = `${this.size}em`
-
-    return charNode;
-  };
 
 Char.prototype.render = function (parent) {
   parent.appendChild(this.node)
@@ -37,11 +35,9 @@ Char.prototype.resize = function (up) {
 
 Char.prototype.copyToClipboard = function () {
   let symbol = this.utfSymbol;
-  let decCode = this.codePoint;
+  let utfCode = this.utfJsCode;
   this.node.addEventListener('click', function (evt) {
-    let copied = evt.shiftKey ?
-        `\\u${decToHexWithPad(decCode)}`
-        : symbol;
+    let copied = evt.shiftKey ? utfCode : symbol;
     typeCopiedSymbol(copied);
     navigator.clipboard.writeText(copied)
     .then (() => {
@@ -87,8 +83,8 @@ function createSet (start, end, set) {
     lastSetStart = start;
     lastSetEnd = end;
   } else {
-    for (let codePoint of set) {
-      addChar(codePoint)
+    for (let symbol of set) {
+      addChar(symbol.codePointAt(0))
     }
   }
   return setFragment;
@@ -101,8 +97,9 @@ function drawSet (start, end, set) {
   charsField.appendChild(createSet(start, end, set))
 }
 function removeChars () {
-  document.querySelectorAll('.char').forEach(function (it) {
-    it.remove();
+  console.log(charList)
+  charList.forEach(function (it) {
+    it.node.remove();
   })
 };
 
@@ -196,9 +193,10 @@ function typeCopiedSymbol (symbol) {
     showCopiedCode(symbol);
     return;
   }
-  log.textContent += `${symbol} `;
-  if (log.textContent.split(' ').length > maxSymbols) {
-    log.textContent = log.textContent.split(' ').slice(-1 - maxSymbols).join(' ');
+  log.textContent += `${symbol}`;
+  let symbolArray = Array.from(log.textContent);
+  if (symbolArray.length > maxSymbols) {
+    log.textContent = symbolArray.slice(-1 - maxSymbols).join('');
   }
 }
 
@@ -227,10 +225,7 @@ createSetFromLogButton.addEventListener('click', () => drawOwnSet(getSetFromType
 
 function getSetFromTyped () {
   let set = new Set;
-  let arr = log.textContent
-  .split(' ')
-  .slice(0, -1)  // Последний пробел добавляет "" в массив
-  .map((it) => it.codePointAt(0));
+  let arr = Array.from(log.textContent);
   for (let symbol of arr) {
     set.add(symbol)
   }
@@ -258,9 +253,7 @@ let saved = JSON.parse(localStorage.getItem('saved'));
 let numberOfSaves = saved ? Object.keys(saved).length + 1 : 1;
 
 function addSetToLocalStorage (set) {
-  let str = Array.from(set)
-  .reduce((a, b) => a + ' ' + String.fromCodePoint(b), '')
-  .slice(1);
+  let str = Array.from(set).join('');
   let name = prompt('Укажите название сэта', `My set ${numberOfSaves}`);
   if (name === null) {
     return false
@@ -295,25 +288,23 @@ startWindow.hidden = false;
 function SaveCard (entrie) {
   this.saveName = entrie[0];
   this.symbolsString = entrie[1];
-  this.symbolsCodes = this.symbolsString.split(' ').map((it) => it.codePointAt(0));
-  this.node = this.node ? this.node : this.createNode();
+  this.symbolsArray = Array.from(this.symbolsString);
+  this.symbolsCodes = this.symbolsArray.map((it) => it.codePointAt(0));
+
+  let saveNode = saveCardTemplate.cloneNode(true);
+  saveNode.querySelector('.save-card__name').textContent = this.saveName;
+  let symbolsList = saveNode.querySelector('.save-card__symbols');
+  let iconsFragment = new DocumentFragment();
+  for (let symbol of this.symbolsArray) {
+    let symbolIcon = document.createElement('span');
+    symbolIcon.classList.add('symbol-icon');
+    symbolIcon.textContent = symbol;
+    iconsFragment.appendChild(symbolIcon);
+  }
+  symbolsList.appendChild(iconsFragment);
+  this.node = saveNode;
 }
 
-SaveCard.prototype.createNode = function () {
-    let saveNode = saveCardTemplate.cloneNode(true);
-    saveNode.querySelector('.save-card__name').textContent = this.saveName;
-    let symbolsList = saveNode.querySelector('.save-card__symbols');
-    let iconsFragment = new DocumentFragment();
-    for (let symbol of this.symbolsString.split(' ')) {
-      let symbolIcon = document.createElement('span');
-      symbolIcon.classList.add('symbol-icon');
-      symbolIcon.textContent = symbol;
-      iconsFragment.appendChild(symbolIcon);
-    }
-    symbolsList.appendChild(iconsFragment);
-
-    return saveNode;
-};
 
 SaveCard.prototype.load = function () {
   let preview = this.node.querySelector('.save-card__symbols');
