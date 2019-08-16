@@ -4,7 +4,7 @@ function Char (i) {
   this.codePoint = i;
   this.size = symbolFontSize;
   this.utfSymbol = String.fromCodePoint(i);
-  this.utfJsCode = `\\u${decToHexWithPad(i)}`;
+  this.utfJsCode = toUTF16(i);
 
   let charNode = document.createElement('button');
   charNode.classList.add('char');
@@ -55,9 +55,22 @@ Char.prototype.playKeySound = function () {
   });
 };
 
-function decToHexWithPad (n) {
-  let str = Number(n).toString(16);
-  return n <= 9999 ? `000${str}`.substr(-4) : str;
+function toUTF16 (codePoint) {
+  const TEN_BITS = parseInt('1111111111', 2);
+  function unicode(num) {
+    let hexStr = Number(num).toString(16).toUpperCase();
+    let paddedHexStr = `000${hexStr}`.substr(-4);
+    return `\\u${paddedHexStr}`;
+  }
+  if (codePoint <= 0xFFFF) {
+    return unicode(codePoint);
+  }
+
+  codePoint -= 0x10000;
+  let leadSurrogate = 0xD800 + (codePoint >> 10);
+  let tailSurrogate = 0xDC00 + (codePoint & TEN_BITS);
+
+  return unicode(leadSurrogate) + unicode(tailSurrogate)
 }
 
 
@@ -97,7 +110,6 @@ function drawSet (start, end, set) {
   charsField.appendChild(createSet(start, end, set))
 }
 function removeChars () {
-  console.log(charList)
   charList.forEach(function (it) {
     it.node.remove();
   })
@@ -196,7 +208,7 @@ function typeCopiedSymbol (symbol) {
   log.textContent += `${symbol}`;
   let symbolArray = Array.from(log.textContent);
   if (symbolArray.length > maxSymbols) {
-    log.textContent = symbolArray.slice(-1 - maxSymbols).join('');
+    log.textContent = symbolArray.slice(-maxSymbols).join('');
   }
 }
 
@@ -224,11 +236,8 @@ const createSetFromLogButton = document.querySelector('#create-set-from-log');
 createSetFromLogButton.addEventListener('click', () => drawOwnSet(getSetFromTyped()));
 
 function getSetFromTyped () {
-  let set = new Set;
   let arr = Array.from(log.textContent);
-  for (let symbol of arr) {
-    set.add(symbol)
-  }
+  let set = new Set(arr);
   return set
 }
 
